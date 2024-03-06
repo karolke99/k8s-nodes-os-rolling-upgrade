@@ -1,0 +1,13 @@
+---
+- hosts:
+    - kube-master
+    - kube-node
+  become: true
+  become_method: sudo
+
+  serial:
+    - 1
+
+  roles:
+    - role: os-rolling-upgrade
+      when: "'master' in inventory_hostname or 'worker' in inventory_hostname"

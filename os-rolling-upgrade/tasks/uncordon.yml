@@ -1,0 +1,24 @@
+---
+- name: Uncordon node
+  kubernetes.core.k8s_drain:
+    state: uncordon
+    name: "{{ inventory_hostname }}"
+    kubeconfig: "{{ kubeconfig_path }}"
+  delegate_to: localhost
+
+- name: Wait for node to uncordon
+  kubernetes.core.k8s_info:
+    kind: Node
+    name: "{{ inventory_hostname }}"
+    kubeconfig: "{{ kubeconfig_path }}"
+  delegate_to: localhost
+  register: wait_for_uncordon
+  retries: 10
+  delay: 10
+  changed_when: false
+  until: not (wait_for_uncordon.resources[0].spec.unschedulable is defined)
+
+
+- name: Uncordon done
+  debug:
+    msg: "{{ inventory_hostname }} uncordoned."

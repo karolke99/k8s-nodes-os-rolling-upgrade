@@ -1,0 +1,30 @@
+---
+- name: Cordon node
+  kubernetes.core.k8s_drain:
+    state: cordon
+    name: "{{ inventory_hostname }}"
+    kubeconfig: "{{ kubeconfig_path }}"
+  delegate_to: localhost
+
+- name: Wait for node to cordon
+  kubernetes.core.k8s_info:
+    kind: Node
+    name: "{{ inventory_hostname }}"
+    kubeconfig: "{{ kubeconfig_path }}"
+  delegate_to: localhost
+  register: wait_for_cordon
+  retries: 10
+  delay: 10
+  changed_when: false
+  until: (wait_for_cordon.resources[0].spec.unschedulable is defined) and (wait_for_cordon.resources[0].spec.unschedulable == true)
+
+- name: Drain node
+  kubernetes.core.k8s_drain:
+    state: drain
+    name: "{{ inventory_hostname }}"
+    kubeconfig: "{{ kubeconfig_path }}"
+    delete_options:
+      ignore_daemonsets: true
+      delete_emptydir_data: true
+      force: true
+  delegate_to: localhost

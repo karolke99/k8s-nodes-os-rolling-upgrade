@@ -1,0 +1,6 @@
+---
+# Location for KUBECONFIG on the host that executes the role
+kubeconfig_path: /config/cluster.conf
+
+# K8s nodes operating system
+k8s_os: ubuntu

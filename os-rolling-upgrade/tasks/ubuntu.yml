@@ -1,0 +1,34 @@
+---
+- name: Update all packages
+  apt:
+    upgrade: dist
+    update_cache: true
+    force_apt_get: true
+
+- name: Check if reboot is required
+  stat:
+    path: /var/run/reboot-required
+  register: reboot_required
+
+- name: Reboot node
+  reboot:
+    post_reboot_delay: 60
+  when: reboot_required.stat.exists
+
+- name: Ensure update-manager-core is installed
+  apt:
+    name: update-manager-core
+    state: present
+
+- name: Do release-upgrade non-interactively.
+  command: do-release-upgrade -f DistUpgradeViewNonInteractive
+
+- name: Check if reboot is required
+  stat:
+    path: /var/run/reboot-required
+  register: reboot_required
+
+- name: Reboot node
+  reboot:
+    post_reboot_delay: 60
+  when: reboot_required.stat.exists
